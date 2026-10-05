@@ -1,0 +1,28 @@
+services:
+  backend:
+    image: kumar3472/utube-transcript-backend:${TAG:-latest}
+    build: ./backend
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      OUTPUT_DIR: /app/transcripts
+      TEMP_DIR: /app/temp
+    volumes:
+      # Transcripts persist on the host, in the same folder local runs use.
+      - ./backend/transcripts:/app/transcripts
+      # Downloaded Whisper models survive rebuilds.
+      - whisper-models:/app/models
+    restart: unless-stopped
+
+  frontend:
+    image: kumar3472/utube-transcript-frontend:${TAG:-latest}
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  whisper-models:
